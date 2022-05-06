@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div id="page-vue">
+    <input type="button" value="首页" @click="firstPage">
+    <input type="button" value="上一页" @click="prevPage">
+    <input type="button" v-for="(pageNum,index) in pageNumbers" @click="pageClick(index)" :value="pageNum">
+    <input type="button" value="下一页" @click="nextPage">
+    <input type="button" value="尾页" @click="lastPage">
+    all {{totalPage}} {{currentPage}}
+</div>
+<script>
+    const pageVueApp = {
+        data() {
+            return {
+                list: null,
+                totalPage: 1, // 总页数，默认为1
+                currentPage: 1, //当前页数 ，默认为1
+                pageSize: 0, // 每页显示数量
+                pageNumbers:[],
+                staticShow:5
+            }
+        },
+        mounted(){
+            this.pageClick({currentPage:1});
+        },
+        methods:{
+            pageClick(condition){
+                this.currentPage = condition.currentPage;
+                axios
+                    .get('/page/list',{params:condition,responseType: 'json'})
+                    .then(response => (
+                        this.totalPage = response.data.totalPage,
+
+                            alert(response.data.totalPage)
+                    ))
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+                alert(that.totalPage);
+                this.setPageSize();
+                this.setPageNumbers();
+            },
+            setPageSize(){
+                //总页数小于staticShow
+                if(this.totalPage<this.staticShow){
+                    this.pageSize = this.totalPage;
+                }else{
+                    this.pageSize = this.staticShow;
+                }
+            },
+            setPageNumbers(){
+                let half = (this.pageSize-1)/2;
+                for(let i= half;i>0;i--){
+                    this.pageNumbers.append(this.currentPage-i);
+                }
+                for(let i =0;i<this.pageSize-half;i++){
+                    this.pageNumbers.append(this.currentPage+i);
+                }
+            },
+            //上一页
+            prevPage() {
+                if (this.currentPage === 1) {
+                    alert("already the first page")
+                } else {
+                    this.pageClick({currentPage:this.currentPage-1});
+                }
+            },
+            // 下一页
+            nextPage() {
+                if (this.currentPage === this.totalPage) {
+                    alert("already the last page")
+                } else {
+                    this.pageClick({currentPage:this.currentPage+1});
+                }
+            },
+            //尾页
+            lastPage() {
+                if (this.currentPage === this.totalPage) {
+                    alert("already the last page")
+                } else {
+                    this.pageClick({currentPage:this.totalPage});
+                }
+            } ,
+            //首页
+            firstPage(){
+                if (this.currentPage === 1) {
+                    alert("already the first page")
+                } else {
+                    this.pageClick({currentPage:1});
+                }
+            }
+        },
+    };
+    Vue.createApp(pageVueApp).mount('#page-vue');
+</script>
+
+</body>
+</html>
